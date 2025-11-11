@@ -1,0 +1,168 @@
+// Prisma Schema for Tradefans
+// Documentation: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String    @map("password_hash")
+  displayName   String?   @map("display_name")
+  avatarUrl     String?   @map("avatar_url")
+  bio           String?
+  twitterHandle String?   @map("twitter_handle")
+  isVerified    Boolean   @default(false) @map("is_verified")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  apiKeys       ExchangeAPIKey[]
+  positions     PositionSnapshot[]
+  signals       TradeSignal[]
+  followers     Follow[]           @relation("UserFollowers")
+  following     Follow[]           @relation("UserFollowing")
+  strategies    TradingStrategy[]
+
+  @@map("users")
+}
+
+// Exchange API Key model (encrypted storage)
+model ExchangeAPIKey {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  exchange         String   // 'coinbase', 'binance', 'alpaca'
+  apiKeyEncrypted  String   @map("api_key_encrypted")
+  apiSecretEncrypted String @map("api_secret_encrypted")
+  permissions      String[] @default(["read"]) // ['read', 'trade']
+  status           String   @default("active") // 'active', 'revoked', 'expired'
+  lastSyncAt       DateTime? @map("last_sync_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, exchange])
+  @@map("exchange_api_keys")
+}
+
+// Position Snapshot model (持仓快照)
+model PositionSnapshot {
+  id               String   @id @default(uuid())
+  traderId         String   @map("trader_id")
+  exchange         String
+  timestamp        DateTime @default(now())
+
+  // Position data (JSON)
+  positions        Json     // Array of {symbol, quantity, avgPrice, currentPrice, unrealizedPnl}
+  totalValue       Float    @map("total_value")
+  totalPnl         Float    @map("total_pnl")
+
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  trader           User     @relation(fields: [traderId], references: [id], onDelete: Cascade)
+
+  @@index([traderId, timestamp])
+  @@map("position_snapshots")
+}
+
+// Trade Signal model (交易信号)
+model TradeSignal {
+  id               String   @id @default(uuid())
+  traderId         String   @map("trader_id")
+  exchange         String
+  action           String   // 'buy', 'sell'
+  symbol           String
+  quantity         Float
+  price            Float
+  timestamp        DateTime @default(now())
+  reason           String?  // AI-generated reason
+
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  trader           User     @relation(fields: [traderId], references: [id], onDelete: Cascade)
+  deliveries       SignalDelivery[]
+
+  @@index([traderId, timestamp])
+  @@map("trade_signals")
+}
+
+// Signal Delivery model (信号推送记录)
+model SignalDelivery {
+  id               String   @id @default(uuid())
+  signalId         String   @map("signal_id")
+  followerId       String   @map("follower_id")
+  status           String   @default("sent") // 'sent', 'read', 'executed', 'ignored'
+  executedAt       DateTime? @map("executed_at")
+  executionPrice   Float?   @map("execution_price")
+
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  signal           TradeSignal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+
+  @@unique([signalId, followerId])
+  @@map("signal_deliveries")
+}
+
+// Follow relationship model (关注关系)
+model Follow {
+  id               String   @id @default(uuid())
+  followerId       String   @map("follower_id")
+  traderId         String   @map("trader_id")
+
+  // Follow configuration (JSON)
+  config           Json     @default("{}") // {autoNotify, symbolsFilter, maxAmountPerTrade}
+
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  follower         User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  trader           User     @relation("UserFollowers", fields: [traderId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, traderId])
+  @@map("follows")
+}
+
+// Trading Strategy model (AI生成的策略画像)
+model TradingStrategy {
+  id               String   @id @default(uuid())
+  traderId         String   @map("trader_id")
+
+  // Quantitative metrics
+  totalTrades      Int      @map("total_trades")
+  winRate          Float    @map("win_rate")
+  avgHoldingDays   Float    @map("avg_holding_days")
+  maxDrawdown      Float    @map("max_drawdown")
+  annualizedReturn Float    @map("annualized_return")
+  sharpeRatio      Float?   @map("sharpe_ratio")
+
+  // AI-generated profile
+  tradingStyle     String   @map("trading_style") // 'value', 'growth', 'swing', 'day_trading'
+  riskLevel        String   @map("risk_level") // 'conservative', 'moderate', 'aggressive'
+  description      String   // AI-generated description
+  suitableFor      String   @map("suitable_for") // Who should follow this trader
+
+  // Top symbols
+  topSymbols       String[] @map("top_symbols")
+
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // Relations
+  trader           User     @relation(fields: [traderId], references: [id], onDelete: Cascade)
+
+  @@unique([traderId])
+  @@map("trading_strategies")
+}

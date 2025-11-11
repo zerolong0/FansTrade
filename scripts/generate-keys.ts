@@ -6,7 +6,7 @@
 
 import crypto from 'crypto';
 
-console.log('\n🔐 Tradefans - Secure Key Generator\n');
+console.log('\n🔐 FansTrade - Secure Key Generator\n');
 
 // Generate JWT secret (64 bytes)
 const jwtSecret = crypto.randomBytes(64).toString('hex');

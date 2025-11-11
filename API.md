@@ -1,4 +1,4 @@
-# Tradefans API Documentation
+# FansTrade API Documentation
 
 Base URL: `http://localhost:3000`
 
@@ -508,5 +508,5 @@ Currently no rate limiting is enforced. Production deployment will include:
 ## Support
 
 For issues or questions:
-- GitHub Issues: https://github.com/yourusername/tradefans/issues
-- Email: support@tradefans.com
+- GitHub Issues: https://github.com/yourusername/fanstrade/issues
+- Email: support@fanstrade.com

@@ -1,4 +1,4 @@
-# Tradefans
+# FansTrade
 
 Social trading platform with AI-powered strategy analysis. Follow top crypto traders and replicate their strategies automatically.
 
@@ -81,7 +81,7 @@ docker-compose down
 ## Project Structure
 
 ```
-tradefans/
+fanstrade/
 ├── prisma/
 │   └── schema.prisma          # Database schema
 ├── src/

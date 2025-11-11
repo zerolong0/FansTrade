@@ -1,4 +1,4 @@
-// Prisma Schema for Tradefans
+// Prisma Schema for FansTrade
 // Documentation: https://pris.ly/d/prisma-schema
 
 generator client {

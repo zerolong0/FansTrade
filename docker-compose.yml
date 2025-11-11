@@ -4,17 +4,17 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: tradefans-postgres
+    container_name: fanstrade-postgres
     environment:
-      POSTGRES_USER: tradefans
+      POSTGRES_USER: fanstrade
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: tradefans
+      POSTGRES_DB: fanstrade
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tradefans"]
+      test: ["CMD-SHELL", "pg_isready -U fanstrade"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: tradefans-redis
+    container_name: fanstrade-redis
     ports:
       - "6379:6379"
     volumes:
@@ -40,11 +40,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tradefans-api
+    container_name: fanstrade-api
     environment:
       NODE_ENV: development
       PORT: 3000
-      DATABASE_URL: postgresql://tradefans:password@postgres:5432/tradefans?schema=public
+      DATABASE_URL: postgresql://fanstrade:password@postgres:5432/fanstrade?schema=public
       REDIS_URL: redis://redis:6379
       JWT_SECRET: dev-secret-change-in-production
       ENCRYPTION_KEY: dev-encryption-key-32-bytes-long

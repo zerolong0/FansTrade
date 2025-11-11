@@ -1,4 +1,4 @@
-# Tradefans - Quick Start Guide
+# FansTrade - Quick Start Guide
 
 ## 🎯 What We've Built
 
@@ -22,7 +22,7 @@ You need PostgreSQL running. Choose one:
 **Option A: Use NAS PostgreSQL** (Recommended)
 ```bash
 # Update .env with your NAS database
-DATABASE_URL="postgresql://username:password@192.168.0.42:5432/tradefans?schema=public"
+DATABASE_URL="postgresql://username:password@192.168.0.42:5432/fanstrade?schema=public"
 ```
 
 **Option B: Local PostgreSQL**
@@ -32,7 +32,7 @@ brew install postgresql
 brew services start postgresql
 
 # Create database
-createdb tradefans
+createdb fanstrade
 ```
 
 ### Step 2: Run Migrations
@@ -53,7 +53,7 @@ npm run dev
 
 You should see:
 ```
-🚀 Tradefans API v0.1.0
+🚀 FansTrade API v0.1.0
 📊 Environment: development
 🌐 Server: http://localhost:3000
 
@@ -171,12 +171,12 @@ You now have a working social trading platform that:
 
 ```bash
 # Build production image
-docker build -t tradefans:latest .
+docker build -t fanstrade:latest .
 
 # Deploy to NAS (use your NAS deployment script)
 # or manually:
-scp docker-compose.yml zerolong@192.168.0.42:/path/to/tradefans/
-ssh zerolong@192.168.0.42 "cd /path/to/tradefans && docker-compose up -d"
+scp docker-compose.yml zerolong@192.168.0.42:/path/to/fanstrade/
+ssh zerolong@192.168.0.42 "cd /path/to/fanstrade && docker-compose up -d"
 ```
 
 ### Option 2: Add More Features
@@ -210,7 +210,7 @@ Create a Next.js frontend that:
 ### "Database connection failed"
 ```bash
 # Check PostgreSQL is running
-psql -U tradefans -d tradefans -c "SELECT 1"
+psql -U fanstrade -d fanstrade -c "SELECT 1"
 
 # Run migrations
 npm run db:migrate

@@ -40,7 +40,7 @@ app.get('/health', async (req, res) => {
   res.json({
     status: dbConnected && encryptionWorks ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
-    service: 'tradefans-api',
+    service: 'fanstrade-api',
     version: '0.1.0',
     checks: {
       database: dbConnected ? 'ok' : 'failed',
@@ -52,7 +52,7 @@ app.get('/health', async (req, res) => {
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'Tradefans API',
+    message: 'FansTrade API',
     version: '0.1.0',
     endpoints: {
       auth: '/api/auth',
@@ -107,7 +107,7 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 // Start server
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, async () => {
-  console.log(`\n🚀 Tradefans API v0.1.0`);
+  console.log(`\n🚀 FansTrade API v0.1.0`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Server: http://localhost:${PORT}`);
   console.log(`\n📡 API Endpoints:`);

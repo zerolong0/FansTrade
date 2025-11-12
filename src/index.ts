@@ -10,6 +10,7 @@ import { testEncryption } from './utils/encryption';
 // Import routes
 import authRoutes from './routes/auth.routes';
 import exchangeRoutes from './routes/exchange.routes';
+import followRoutes from './routes/follow.routes';
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +58,7 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       exchange: '/api/exchange',
+      follow: '/api/follow',
       health: '/health',
     },
   });
@@ -65,6 +67,7 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/exchange', exchangeRoutes);
+app.use('/api/follow', followRoutes);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
@@ -114,6 +117,7 @@ httpServer.listen(PORT, async () => {
   console.log(`   - Health: http://localhost:${PORT}/health`);
   console.log(`   - Auth: http://localhost:${PORT}/api/auth`);
   console.log(`   - Exchange: http://localhost:${PORT}/api/exchange`);
+  console.log(`   - Follow: http://localhost:${PORT}/api/follow`);
 
   // Test connections
   console.log(`\n🔍 Running system checks...`);

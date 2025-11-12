@@ -6,7 +6,8 @@ Base URL: `http://localhost:3000`
 
 1. [Authentication](#authentication)
 2. [Exchange Integration](#exchange-integration)
-3. [Error Handling](#error-handling)
+3. [Social - Follow System](#social---follow-system)
+4. [Error Handling](#error-handling)
 
 ---
 
@@ -370,6 +371,256 @@ Authorization: Bearer YOUR_JWT_TOKEN
 **cURL Example:**
 ```bash
 curl -X DELETE http://localhost:3000/api/exchange/660e8400-e29b-41d4-a716-446655440001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+## Social - Follow System
+
+### 1. Follow a User
+
+**Endpoint:** `POST /api/follow/:userId`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Request Body:**
+```json
+{
+  "config": {
+    "autoNotify": true,
+    "symbolsFilter": ["BTC", "ETH"],
+    "maxAmountPerTrade": 1000
+  }
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "message": "Successfully followed user",
+  "follow": {
+    "id": "770e8400-e29b-41d4-a716-446655440000",
+    "traderId": "880e8400-e29b-41d4-a716-446655440001",
+    "createdAt": "2025-01-12T11:00:00.000Z",
+    "config": {
+      "autoNotify": true,
+      "symbolsFilter": ["BTC", "ETH"],
+      "maxAmountPerTrade": 1000
+    }
+  },
+  "trader": {
+    "id": "880e8400-e29b-41d4-a716-446655440001",
+    "username": "cryptowhale",
+    "displayName": "Crypto Whale",
+    "avatarUrl": "https://example.com/whale.jpg",
+    "isVerified": true
+  }
+}
+```
+
+**Error Responses:**
+- **400 Bad Request** - Cannot follow yourself
+  ```json
+  {
+    "error": "Cannot follow yourself"
+  }
+  ```
+- **400 Bad Request** - Already following this user
+  ```json
+  {
+    "error": "Already following this user"
+  }
+  ```
+- **404 Not Found** - User not found
+  ```json
+  {
+    "error": "User not found"
+  }
+  ```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/follow/880e8400-e29b-41d4-a716-446655440001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "config": {
+      "autoNotify": true,
+      "symbolsFilter": ["BTC", "ETH"],
+      "maxAmountPerTrade": 1000
+    }
+  }'
+```
+
+---
+
+### 2. Unfollow a User
+
+**Endpoint:** `DELETE /api/follow/:userId`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Successfully unfollowed user"
+}
+```
+
+**cURL Example:**
+```bash
+curl -X DELETE http://localhost:3000/api/follow/880e8400-e29b-41d4-a716-446655440001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### 3. Get Following List
+
+**Endpoint:** `GET /api/follow/following`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Query Parameters:**
+- `limit` (optional): Number of results to return (default: `20`)
+- `offset` (optional): Pagination offset (default: `0`)
+
+**Response (200 OK):**
+```json
+{
+  "following": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440000",
+      "createdAt": "2025-01-10T15:30:00.000Z",
+      "config": {
+        "autoNotify": true,
+        "symbolsFilter": ["BTC", "ETH"],
+        "maxAmountPerTrade": 1000
+      },
+      "trader": {
+        "id": "880e8400-e29b-41d4-a716-446655440001",
+        "username": "cryptowhale",
+        "displayName": "Crypto Whale",
+        "avatarUrl": "https://example.com/whale.jpg",
+        "isVerified": true,
+        "_count": {
+          "followers": 1234
+        }
+      }
+    }
+  ],
+  "total": 15,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:3000/api/follow/following?limit=20&offset=0" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### 4. Get Followers List
+
+**Endpoint:** `GET /api/follow/followers`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Query Parameters:**
+- `limit` (optional): Number of results to return (default: `20`)
+- `offset` (optional): Pagination offset (default: `0`)
+
+**Response (200 OK):**
+```json
+{
+  "followers": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440002",
+      "createdAt": "2025-01-12T09:15:00.000Z",
+      "follower": {
+        "id": "990e8400-e29b-41d4-a716-446655440003",
+        "username": "trader123",
+        "displayName": "Trader",
+        "avatarUrl": "https://example.com/trader.jpg",
+        "isVerified": false
+      }
+    }
+  ],
+  "total": 42,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:3000/api/follow/followers?limit=20&offset=0" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### 5. Check Follow Status
+
+**Endpoint:** `GET /api/follow/check/:userId`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Response (200 OK):**
+```json
+{
+  "isFollowing": true
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/follow/check/880e8400-e29b-41d4-a716-446655440001 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### 6. Get Follow Statistics
+
+**Endpoint:** `GET /api/follow/stats/:userId`
+
+**Headers:**
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Response (200 OK):**
+```json
+{
+  "userId": "880e8400-e29b-41d4-a716-446655440001",
+  "followersCount": 1234,
+  "followingCount": 56
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/follow/stats/880e8400-e29b-41d4-a716-446655440001 \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 

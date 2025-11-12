@@ -13,4 +13,8 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['ts-jest', {}],
   },
+  testEnvironment: 'node',
+  globals: {
+    'process.env.NODE_ENV': 'test',
+  },
 };

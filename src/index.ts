@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
-app.get('/health', async (req, res) => {
+app.get('/health', async (_req, res) => {
   const dbConnected = await testDatabaseConnection();
   const encryptionWorks = testEncryption();
 
@@ -51,7 +51,7 @@ app.get('/health', async (req, res) => {
 });
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({
     message: 'FansTrade API',
     version: '0.1.0',
@@ -99,7 +99,7 @@ app.use((req, res) => {
 });
 
 // Error handler
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('❌ Error:', err);
   res.status(500).json({
     error: 'Internal Server Error',
@@ -107,24 +107,27 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-// Start server
+// Start server only if not in test mode
 const PORT = process.env.PORT || 3000;
-httpServer.listen(PORT, async () => {
-  console.log(`\n🚀 FansTrade API v0.1.0`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 Server: http://localhost:${PORT}`);
-  console.log(`\n📡 API Endpoints:`);
-  console.log(`   - Health: http://localhost:${PORT}/health`);
-  console.log(`   - Auth: http://localhost:${PORT}/api/auth`);
-  console.log(`   - Exchange: http://localhost:${PORT}/api/exchange`);
-  console.log(`   - Follow: http://localhost:${PORT}/api/follow`);
 
-  // Test connections
-  console.log(`\n🔍 Running system checks...`);
-  await testDatabaseConnection();
-  const encryptionOk = testEncryption();
-  console.log(`${encryptionOk ? '✅' : '❌'} Encryption: ${encryptionOk ? 'working' : 'failed'}`);
-  console.log(`\n✨ Ready to accept requests\n`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  httpServer.listen(PORT, async () => {
+    console.log(`\n🚀 FansTrade API v0.1.0`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 Server: http://localhost:${PORT}`);
+    console.log(`\n📡 API Endpoints:`);
+    console.log(`   - Health: http://localhost:${PORT}/health`);
+    console.log(`   - Auth: http://localhost:${PORT}/api/auth`);
+    console.log(`   - Exchange: http://localhost:${PORT}/api/exchange`);
+    console.log(`   - Follow: http://localhost:${PORT}/api/follow`);
+
+    // Test connections
+    console.log(`\n🔍 Running system checks...`);
+    await testDatabaseConnection();
+    const encryptionOk = testEncryption();
+    console.log(`${encryptionOk ? '✅' : '❌'} Encryption: ${encryptionOk ? 'working' : 'failed'}`);
+    console.log(`\n✨ Ready to accept requests\n`);
+  });
+}
 
 export { app, io };

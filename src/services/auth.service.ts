@@ -43,7 +43,7 @@ export class AuthService {
    * Generate JWT token
    */
   private generateToken(payload: JWTPayload): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
   }
 
   /**
@@ -52,7 +52,7 @@ export class AuthService {
   public verifyToken(token: string): JWTPayload {
     try {
       return jwt.verify(token, JWT_SECRET) as JWTPayload;
-    } catch (error) {
+    } catch {
       throw new Error('Invalid or expired token');
     }
   }
@@ -156,7 +156,7 @@ export class AuthService {
     });
 
     // Remove passwordHash from response
-    const { passwordHash, ...userWithoutPassword } = user;
+    const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
 
     return { user: userWithoutPassword, token };
   }

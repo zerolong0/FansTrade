@@ -53,7 +53,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
  * Optional authentication middleware
  * Attaches user if token is valid, but doesn't require it
  */
-export function optionalAuth(req: AuthRequest, res: Response, next: NextFunction): void {
+export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): void {
   try {
     const authHeader = req.headers.authorization;
 
@@ -71,7 +71,7 @@ export function optionalAuth(req: AuthRequest, res: Response, next: NextFunction
     }
 
     next();
-  } catch (error) {
+  } catch {
     // Token is invalid, but we don't fail
     next();
   }

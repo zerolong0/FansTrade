@@ -179,8 +179,47 @@ export class FollowService {
   async getFollowers(
     traderId: string,
     options?: { limit?: number; offset?: number }
-  ): Promise<any> {
-    throw new Error('Not implemented');
+  ): Promise<{
+    followers: any[];
+    total: number;
+    limit: number;
+    offset: number;
+  }> {
+    const limit = options?.limit || 20;
+    const offset = options?.offset || 0;
+
+    // Get total count
+    const total = await prisma.follow.count({
+      where: { traderId },
+    });
+
+    // Get followers list with follower info
+    const followers = await prisma.follow.findMany({
+      where: { traderId },
+      select: {
+        id: true,
+        createdAt: true,
+        follower: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            isVerified: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+    });
+
+    return {
+      followers,
+      total,
+      limit,
+      offset,
+    };
   }
 
   /**

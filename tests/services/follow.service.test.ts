@@ -222,4 +222,65 @@ describe('FollowService', () => {
       expect(result.total).toBe(1);
     });
   });
+
+  describe('getFollowers', () => {
+    const mockTraderId = 'trader-123';
+
+    it('should return empty array when no followers', async () => {
+      (prisma.follow.count as jest.Mock).mockResolvedValue(0);
+      (prisma.follow.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await followService.getFollowers(mockTraderId);
+
+      expect(result).toHaveProperty('followers');
+      expect(result).toHaveProperty('total');
+      expect(Array.isArray(result.followers)).toBe(true);
+      expect(result.total).toBe(0);
+      expect(result.followers).toEqual([]);
+    });
+
+    it('should accept limit and offset options', async () => {
+      (prisma.follow.count as jest.Mock).mockResolvedValue(5);
+      (prisma.follow.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await followService.getFollowers(mockTraderId, {
+        limit: 10,
+        offset: 0,
+      });
+
+      expect(result).toBeDefined();
+      expect(result.limit).toBe(10);
+      expect(result.offset).toBe(0);
+      expect(prisma.follow.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: 10,
+          skip: 0,
+        })
+      );
+    });
+
+    it('should return followers list with follower info', async () => {
+      const mockFollowers = [
+        {
+          id: 'follow-1',
+          createdAt: new Date(),
+          follower: {
+            id: 'follower-1',
+            username: 'follower1',
+            displayName: 'Follower 1',
+            avatarUrl: null,
+            isVerified: false,
+          },
+        },
+      ];
+
+      (prisma.follow.count as jest.Mock).mockResolvedValue(1);
+      (prisma.follow.findMany as jest.Mock).mockResolvedValue(mockFollowers);
+
+      const result = await followService.getFollowers(mockTraderId);
+
+      expect(result.followers).toEqual(mockFollowers);
+      expect(result.total).toBe(1);
+    });
+  });
 });

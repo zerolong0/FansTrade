@@ -109,7 +109,13 @@ export class FollowService {
     followerId: string,
     traderId: string
   ): Promise<void> {
-    throw new Error('Not implemented');
+    // Delete follow relationship (idempotent - no error if doesn't exist)
+    await prisma.follow.deleteMany({
+      where: {
+        followerId,
+        traderId,
+      },
+    });
   }
 
   /**

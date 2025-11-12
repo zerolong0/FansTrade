@@ -133,4 +133,30 @@ describe('FollowService', () => {
       });
     });
   });
+
+  describe('unfollowUser', () => {
+    const mockFollowerId = 'follower-123';
+    const mockTraderId = 'trader-456';
+
+    it('should not throw error when unfollowing non-existent follow', async () => {
+      (prisma.follow.deleteMany as jest.Mock).mockResolvedValue({ count: 0 });
+
+      await expect(
+        followService.unfollowUser(mockFollowerId, mockTraderId)
+      ).resolves.not.toThrow();
+    });
+
+    it('should successfully delete follow relationship', async () => {
+      (prisma.follow.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+      await followService.unfollowUser(mockFollowerId, mockTraderId);
+
+      expect(prisma.follow.deleteMany).toHaveBeenCalledWith({
+        where: {
+          followerId: mockFollowerId,
+          traderId: mockTraderId,
+        },
+      });
+    });
+  });
 });

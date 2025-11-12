@@ -11,6 +11,70 @@ export interface FollowConfig {
 }
 
 /**
+ * User profile information
+ */
+export interface UserProfile {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  isVerified: boolean;
+}
+
+/**
+ * Follow relationship with trader details
+ */
+export interface FollowResult {
+  id: string;
+  followerId: string;
+  traderId: string;
+  createdAt: Date;
+  config: FollowConfig;
+  trader: UserProfile;
+}
+
+/**
+ * Paginated list of follows with trader details
+ */
+export interface PaginatedFollowing {
+  following: Array<{
+    id: string;
+    createdAt: Date;
+    config: FollowConfig;
+    trader: UserProfile & {
+      _count: {
+        followers: number;
+      };
+    };
+  }>;
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Paginated list of followers
+ */
+export interface PaginatedFollowers {
+  followers: Array<{
+    id: string;
+    createdAt: Date;
+    follower: UserProfile;
+  }>;
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Follow statistics
+ */
+export interface FollowStats {
+  followersCount: number;
+  followingCount: number;
+}
+
+/**
  * Custom error class for follow-related errors
  */
 export class FollowError extends Error {
@@ -35,7 +99,7 @@ export class FollowService {
     followerId: string,
     traderId: string,
     config?: FollowConfig
-  ): Promise<any> {
+  ): Promise<FollowResult> {
     // Validation: Cannot follow yourself
     if (followerId === traderId) {
       throw new FollowError(
@@ -124,14 +188,9 @@ export class FollowService {
   async getFollowing(
     userId: string,
     options?: { limit?: number; offset?: number }
-  ): Promise<{
-    following: any[];
-    total: number;
-    limit: number;
-    offset: number;
-  }> {
-    const limit = options?.limit || 20;
-    const offset = options?.offset || 0;
+  ): Promise<PaginatedFollowing> {
+    const limit = Math.min(options?.limit || 20, 100); // Max 100
+    const offset = Math.max(options?.offset || 0, 0);  // No negative
 
     // Get total count
     const total = await prisma.follow.count({
@@ -179,14 +238,9 @@ export class FollowService {
   async getFollowers(
     traderId: string,
     options?: { limit?: number; offset?: number }
-  ): Promise<{
-    followers: any[];
-    total: number;
-    limit: number;
-    offset: number;
-  }> {
-    const limit = options?.limit || 20;
-    const offset = options?.offset || 0;
+  ): Promise<PaginatedFollowers> {
+    const limit = Math.min(options?.limit || 20, 100); // Max 100
+    const offset = Math.max(options?.offset || 0, 0);  // No negative
 
     // Get total count
     const total = await prisma.follow.count({
@@ -246,7 +300,7 @@ export class FollowService {
    */
   async getFollowStats(
     userId: string
-  ): Promise<{ followersCount: number; followingCount: number }> {
+  ): Promise<FollowStats> {
     const [followersCount, followingCount] = await Promise.all([
       prisma.follow.count({
         where: { traderId: userId },

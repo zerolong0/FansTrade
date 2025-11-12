@@ -247,7 +247,19 @@ export class FollowService {
   async getFollowStats(
     userId: string
   ): Promise<{ followersCount: number; followingCount: number }> {
-    throw new Error('Not implemented');
+    const [followersCount, followingCount] = await Promise.all([
+      prisma.follow.count({
+        where: { traderId: userId },
+      }),
+      prisma.follow.count({
+        where: { followerId: userId },
+      }),
+    ]);
+
+    return {
+      followersCount,
+      followingCount,
+    };
   }
 }
 

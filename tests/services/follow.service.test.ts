@@ -322,4 +322,44 @@ describe('FollowService', () => {
       expect(result).toBe(true);
     });
   });
+
+  describe('getFollowStats', () => {
+    const mockUserId = 'user-123';
+
+    it('should return stats with correct structure', async () => {
+      (prisma.follow.count as jest.Mock)
+        .mockResolvedValueOnce(10) // followersCount
+        .mockResolvedValueOnce(5); // followingCount
+
+      const result = await followService.getFollowStats(mockUserId);
+
+      expect(result).toHaveProperty('followersCount');
+      expect(result).toHaveProperty('followingCount');
+      expect(typeof result.followersCount).toBe('number');
+      expect(typeof result.followingCount).toBe('number');
+    });
+
+    it('should return 0 for non-existent user', async () => {
+      (prisma.follow.count as jest.Mock)
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0);
+
+      const result = await followService.getFollowStats('non-existent');
+
+      expect(result.followersCount).toBe(0);
+      expect(result.followingCount).toBe(0);
+    });
+
+    it('should return correct counts', async () => {
+      (prisma.follow.count as jest.Mock)
+        .mockResolvedValueOnce(42) // followersCount
+        .mockResolvedValueOnce(15); // followingCount
+
+      const result = await followService.getFollowStats(mockUserId);
+
+      expect(result.followersCount).toBe(42);
+      expect(result.followingCount).toBe(15);
+      expect(prisma.follow.count).toHaveBeenCalledTimes(2);
+    });
+  });
 });

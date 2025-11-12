@@ -283,4 +283,43 @@ describe('FollowService', () => {
       expect(result.total).toBe(1);
     });
   });
+
+  describe('isFollowing', () => {
+    const mockFollowerId = 'follower-123';
+    const mockTraderId = 'trader-456';
+
+    it('should return boolean', async () => {
+      (prisma.follow.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await followService.isFollowing(
+        mockFollowerId,
+        mockTraderId
+      );
+      expect(typeof result).toBe('boolean');
+    });
+
+    it('should return false when not following', async () => {
+      (prisma.follow.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await followService.isFollowing(
+        'non-existent-1',
+        'non-existent-2'
+      );
+      expect(result).toBe(false);
+    });
+
+    it('should return true when following', async () => {
+      (prisma.follow.findUnique as jest.Mock).mockResolvedValue({
+        id: 'follow-123',
+        followerId: mockFollowerId,
+        traderId: mockTraderId,
+      });
+
+      const result = await followService.isFollowing(
+        mockFollowerId,
+        mockTraderId
+      );
+      expect(result).toBe(true);
+    });
+  });
 });

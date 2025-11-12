@@ -229,7 +229,16 @@ export class FollowService {
     followerId: string,
     traderId: string
   ): Promise<boolean> {
-    throw new Error('Not implemented');
+    const follow = await prisma.follow.findUnique({
+      where: {
+        followerId_traderId: {
+          followerId,
+          traderId,
+        },
+      },
+    });
+
+    return follow !== null;
   }
 
   /**

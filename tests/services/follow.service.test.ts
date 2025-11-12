@@ -1,10 +1,28 @@
 import { FollowService } from '../../src/services/follow.service';
+import { prisma } from '../../src/config/database';
+
+// Mock Prisma
+jest.mock('../../src/config/database', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+    follow: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      deleteMany: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+    },
+  },
+}));
 
 describe('FollowService', () => {
   let followService: FollowService;
 
   beforeEach(() => {
     followService = new FollowService();
+    jest.clearAllMocks();
   });
 
   describe('Class structure', () => {
@@ -34,6 +52,85 @@ describe('FollowService', () => {
 
     it('should have getFollowStats method', () => {
       expect(typeof followService.getFollowStats).toBe('function');
+    });
+  });
+
+  describe('followUser', () => {
+    const mockFollowerId = 'follower-123';
+    const mockTraderId = 'trader-456';
+
+    it('should throw error when trying to follow yourself', async () => {
+      await expect(
+        followService.followUser(mockFollowerId, mockFollowerId)
+      ).rejects.toThrow('Cannot follow yourself');
+    });
+
+    it('should throw error when trader does not exist', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        followService.followUser(mockFollowerId, 'non-existent-id')
+      ).rejects.toThrow('User not found');
+    });
+
+    it('should throw error when already following', async () => {
+      const mockTrader = {
+        id: mockTraderId,
+        username: 'trader',
+        displayName: 'Trader',
+        avatarUrl: null,
+        isVerified: false,
+      };
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockTrader);
+      (prisma.follow.findUnique as jest.Mock).mockResolvedValue({ id: 'follow-123' });
+
+      await expect(
+        followService.followUser(mockFollowerId, mockTraderId)
+      ).rejects.toThrow('Already following this user');
+    });
+
+    it('should create follow relationship successfully', async () => {
+      const mockTrader = {
+        id: mockTraderId,
+        username: 'trader',
+        displayName: 'Trader',
+        avatarUrl: null,
+        isVerified: false,
+      };
+      const mockFollow = {
+        id: 'follow-123',
+        followerId: mockFollowerId,
+        traderId: mockTraderId,
+        createdAt: new Date(),
+        config: {},
+        trader: mockTrader,
+      };
+
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockTrader);
+      (prisma.follow.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.follow.create as jest.Mock).mockResolvedValue(mockFollow);
+
+      const result = await followService.followUser(mockFollowerId, mockTraderId);
+
+      expect(result).toEqual(mockFollow);
+      expect(prisma.follow.create).toHaveBeenCalledWith({
+        data: {
+          followerId: mockFollowerId,
+          traderId: mockTraderId,
+          config: {},
+        },
+        include: {
+          trader: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+              isVerified: true,
+            },
+          },
+        },
+      });
     });
   });
 });

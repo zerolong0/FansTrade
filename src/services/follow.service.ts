@@ -36,7 +36,70 @@ export class FollowService {
     traderId: string,
     config?: FollowConfig
   ): Promise<any> {
-    throw new Error('Not implemented');
+    // Validation: Cannot follow yourself
+    if (followerId === traderId) {
+      throw new FollowError(
+        'Cannot follow yourself',
+        'CANNOT_FOLLOW_SELF',
+        400
+      );
+    }
+
+    // Check if trader exists
+    const trader = await prisma.user.findUnique({
+      where: { id: traderId },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        isVerified: true,
+      },
+    });
+
+    if (!trader) {
+      throw new FollowError('User not found', 'USER_NOT_FOUND', 404);
+    }
+
+    // Check if already following
+    const existingFollow = await prisma.follow.findUnique({
+      where: {
+        followerId_traderId: {
+          followerId,
+          traderId,
+        },
+      },
+    });
+
+    if (existingFollow) {
+      throw new FollowError(
+        'Already following this user',
+        'ALREADY_FOLLOWING',
+        400
+      );
+    }
+
+    // Create follow relationship
+    const follow = await prisma.follow.create({
+      data: {
+        followerId,
+        traderId,
+        config: config || {},
+      },
+      include: {
+        trader: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            isVerified: true,
+          },
+        },
+      },
+    });
+
+    return follow;
   }
 
   /**

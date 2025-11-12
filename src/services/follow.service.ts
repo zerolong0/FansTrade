@@ -148,7 +148,7 @@ export class FollowService {
       data: {
         followerId,
         traderId,
-        config: config || {},
+        config: (config || {}) as any,
       },
       include: {
         trader: {
@@ -163,7 +163,15 @@ export class FollowService {
       },
     });
 
-    return follow;
+    // Type assertion to match FollowResult interface
+    return {
+      id: follow.id,
+      followerId: follow.followerId,
+      traderId: follow.traderId,
+      createdAt: follow.createdAt,
+      config: follow.config as FollowConfig,
+      trader: follow.trader,
+    };
   }
 
   /**
@@ -224,8 +232,14 @@ export class FollowService {
       skip: offset,
     });
 
+    // Type assertion for config field
+    const typedFollowing = following.map(item => ({
+      ...item,
+      config: item.config as FollowConfig,
+    }));
+
     return {
-      following,
+      following: typedFollowing,
       total,
       limit,
       offset,

@@ -22,6 +22,8 @@ const paginationSchema = z.object({
   offset: z.string().regex(/^\d+$/).transform(Number).optional(),
 });
 
+const userIdSchema = z.string().uuid('Invalid user ID format');
+
 /**
  * POST /api/follow/:userId
  * Follow a user
@@ -33,7 +35,8 @@ router.post('/:userId', authenticate, async (req: AuthRequest, res: Response) =>
       return;
     }
 
-    const { userId: traderId } = req.params;
+    const { userId } = req.params;
+    const validatedUserId = userIdSchema.parse(userId);
     const followerId = req.user.userId;
 
     // Validate config if provided
@@ -43,7 +46,7 @@ router.post('/:userId', authenticate, async (req: AuthRequest, res: Response) =>
     }
 
     // Follow user
-    const follow = await followService.followUser(followerId, traderId, config);
+    const follow = await followService.followUser(followerId, validatedUserId, config);
 
     res.status(201).json({
       message: 'Successfully followed user',
@@ -83,16 +86,28 @@ router.delete('/:userId', authenticate, async (req: AuthRequest, res: Response) 
       return;
     }
 
-    const { userId: traderId } = req.params;
+    const { userId } = req.params;
+    const validatedUserId = userIdSchema.parse(userId);
     const followerId = req.user.userId;
 
     // Unfollow user
-    await followService.unfollowUser(followerId, traderId);
+    await followService.unfollowUser(followerId, validatedUserId);
 
     res.json({
       message: 'Successfully unfollowed user',
     });
   } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: 'Validation error', details: error.errors });
+      return;
+    }
+
+    // Handle FollowError
+    if (error.name === 'FollowError') {
+      res.status(error.statusCode).json({ error: error.message, code: error.code });
+      return;
+    }
+
     const message = error instanceof Error ? error.message : 'Failed to unfollow user';
     res.status(500).json({ error: message });
   }
@@ -167,15 +182,21 @@ router.get('/check/:userId', authenticate, async (req: AuthRequest, res: Respons
       return;
     }
 
-    const { userId: traderId } = req.params;
+    const { userId } = req.params;
+    const validatedUserId = userIdSchema.parse(userId);
     const followerId = req.user.userId;
 
-    const isFollowing = await followService.isFollowing(followerId, traderId);
+    const isFollowing = await followService.isFollowing(followerId, validatedUserId);
 
     res.json({
       isFollowing,
     });
   } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: 'Validation error', details: error.errors });
+      return;
+    }
+
     const message = error instanceof Error ? error.message : 'Failed to check follow status';
     res.status(500).json({ error: message });
   }
@@ -188,14 +209,20 @@ router.get('/check/:userId', authenticate, async (req: AuthRequest, res: Respons
 router.get('/stats/:userId', async (req, res: Response) => {
   try {
     const { userId } = req.params;
+    const validatedUserId = userIdSchema.parse(userId);
 
-    const stats = await followService.getFollowStats(userId);
+    const stats = await followService.getFollowStats(validatedUserId);
 
     res.json({
-      userId,
+      userId: validatedUserId,
       ...stats,
     });
   } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: 'Validation error', details: error.errors });
+      return;
+    }
+
     const message = error instanceof Error ? error.message : 'Failed to get follow stats';
     res.status(500).json({ error: message });
   }

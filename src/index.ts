@@ -12,14 +12,22 @@ import authRoutes from './routes/auth.routes';
 import exchangeRoutes from './routes/exchange.routes';
 import followRoutes from './routes/follow.routes';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables (override system env vars)
+dotenv.config({ override: true });
 
 const app = express();
 const httpServer = createServer(app);
+
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'http://localhost:3001', // 添加前端开发端口
+  'http://192.168.0.42:3001', // NAS 内网访问
+];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
   },
 });
@@ -27,7 +35,13 @@ const io = new Server(httpServer, {
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());

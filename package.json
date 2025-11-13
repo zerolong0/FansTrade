@@ -12,10 +12,10 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:generate": "DATABASE_URL=\"postgresql://fanstrade:password@localhost:5432/fanstrade?schema=public\" prisma generate",
+    "db:migrate": "DATABASE_URL=\"postgresql://fanstrade:password@localhost:5432/fanstrade?schema=public\" prisma migrate dev",
+    "db:studio": "DATABASE_URL=\"postgresql://fanstrade:password@localhost:5432/fanstrade?schema=public\" prisma studio",
+    "db:seed": "DATABASE_URL=\"postgresql://fanstrade:password@localhost:5432/fanstrade?schema=public\" tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset && npm run db:seed"
   },
   "keywords": [

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -7,6 +7,7 @@ async function main() {
   console.log('🌱 Seeding database...');
 
   // 创建测试用户
+  // 测试密码统一为: password123
   const hashedPassword = await bcrypt.hash('password123', 10);
 
   const user1 = await prisma.user.upsert({
@@ -17,7 +18,7 @@ async function main() {
       username: 'cryptowhale',
       passwordHash: hashedPassword,
       displayName: 'Crypto Whale',
-      bio: '专注 BTC/ETH 交易,5年经验',
+      bio: '专注 BTC/ETH 交易，5年经验',
       isVerified: true,
     },
   });
@@ -62,7 +63,7 @@ async function main() {
       sharpeRatio: 1.8,
       tradingStyle: 'swing',
       riskLevel: 'moderate',
-      description: '稳健的波段交易策略,专注于主流币种',
+      description: '稳健的波段交易策略，专注于主流币种',
       suitableFor: '中等风险承受能力的投资者',
       topSymbols: ['BTC-USD', 'ETH-USD', 'SOL-USD'],
     },
@@ -81,8 +82,8 @@ async function main() {
       sharpeRatio: 2.1,
       tradingStyle: 'value',
       riskLevel: 'conservative',
-      description: '价值投资策略,长期持有优质资产',
-      suitableFor: '保守型投资者,寻求稳定收益',
+      description: '价值投资策略，长期持有优质资产',
+      suitableFor: '保守型投资者，寻求稳定收益',
       topSymbols: ['BTC-USD'],
     },
   });

@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../config/database';
 

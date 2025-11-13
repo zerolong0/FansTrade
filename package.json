@@ -14,7 +14,9 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset && npm run db:seed"
   },
   "keywords": [
     "trading",

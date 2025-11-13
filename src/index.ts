@@ -11,6 +11,7 @@ import { testEncryption } from './utils/encryption';
 import authRoutes from './routes/auth.routes';
 import exchangeRoutes from './routes/exchange.routes';
 import followRoutes from './routes/follow.routes';
+import tradersRoutes from './routes/traders.routes';
 
 // Load environment variables (override system env vars)
 dotenv.config({ override: true });
@@ -82,6 +83,7 @@ app.get('/', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/exchange', exchangeRoutes);
 app.use('/api/follow', followRoutes);
+app.use('/api', tradersRoutes);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {

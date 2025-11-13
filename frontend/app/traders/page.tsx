@@ -1,36 +1,19 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/layout/Navbar';
 import { TraderCard } from '@/components/traders/TraderCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { tradersAPI } from '@/lib/api/traders';
 
 export default function TradersPage() {
-  // Mock traders data (replace with real API later)
-  const traders = [
-    {
-      id: '1',
-      username: 'cryptowhale',
-      displayName: 'Crypto Whale',
-      avatarUrl: null,
-      isVerified: true,
-      _count: { followers: 1234 },
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['traders'],
+    queryFn: async () => {
+      const response = await tradersAPI.getTraders(20, 0);
+      return response.data;
     },
-    {
-      id: '2',
-      username: 'btcmaster',
-      displayName: 'BTC Master',
-      avatarUrl: null,
-      isVerified: true,
-      _count: { followers: 890 },
-    },
-    {
-      id: '3',
-      username: 'ethtrader',
-      displayName: 'ETH Trader',
-      avatarUrl: null,
-      isVerified: false,
-      _count: { followers: 567 },
-    },
-  ];
+  });
 
   return (
     <main className="min-h-screen">
@@ -44,11 +27,27 @@ export default function TradersPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {traders.map((trader) => (
-            <TraderCard key={trader.id} trader={trader} />
-          ))}
-        </div>
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-64 rounded-xl" />
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-400">Failed to load traders. Please try again.</p>
+          </div>
+        )}
+
+        {data && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {data.traders.map((trader) => (
+              <TraderCard key={trader.id} trader={trader} />
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );

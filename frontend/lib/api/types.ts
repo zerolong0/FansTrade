@@ -1,14 +1,18 @@
 export interface User {
   id: string;
   username: string;
+  email: string;
   displayName: string | null;
   avatarUrl: string | null;
   isVerified: boolean;
 }
 
 export interface Trader extends User {
+  bio?: string | null;
+  twitterHandle?: string | null;
   _count?: {
     followers: number;
+    following?: number;
   };
 }
 

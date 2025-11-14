@@ -1,34 +1,6 @@
-# Multi-stage build for Tradefans API
+# Production Dockerfile for FansTrade API
+# Uses tsx to run TypeScript directly without pre-compilation
 
-# Stage 1: Build
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Use Aliyun mirror for faster package downloads in China
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-
-# Install build dependencies for native modules
-RUN apk add --no-cache python3 make g++
-
-# Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
-COPY prisma ./prisma/
-
-# Install dependencies
-RUN npm install
-
-# Copy source code
-COPY src ./src
-
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Build TypeScript
-RUN npm run build
-
-# Stage 2: Production
 FROM node:20-alpine
 
 WORKDIR /app
@@ -42,15 +14,16 @@ RUN apk add --no-cache python3 make g++
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm install --only=production
+# Install ALL dependencies (including tsx from devDependencies)
+RUN npm install
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 RUN npx prisma generate
 
-# Copy built files from builder
-COPY --from=builder /app/dist ./dist
+# Copy TypeScript source code
+COPY tsconfig.json ./
+COPY src ./src
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -68,5 +41,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start application
-CMD ["node", "dist/index.js"]
+# Start application with tsx (transpiles TypeScript at runtime)
+CMD ["npx", "tsx", "src/index.ts"]

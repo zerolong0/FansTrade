@@ -27,9 +27,9 @@ export function Navbar() {
                 Following
               </Link>
               <div className="flex items-center space-x-3">
-                <span className="text-sm text-muted-foreground">
+                <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   @{user?.username}
-                </span>
+                </Link>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -41,10 +41,12 @@ export function Navbar() {
               </div>
             </>
           ) : (
-            <Button size="sm" className="btn-primary">
-              <User className="w-4 h-4 mr-2" />
-              Login
-            </Button>
+            <Link href="/login">
+              <Button size="sm" className="btn-primary">
+                <User className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+            </Link>
           )}
         </div>
       </div>

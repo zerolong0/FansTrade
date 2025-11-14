@@ -14,10 +14,18 @@ function getEncryptionKey(): Buffer {
     throw new Error('ENCRYPTION_KEY environment variable is not set');
   }
 
-  // Ensure key is exactly 32 bytes
-  const keyBuffer = Buffer.from(key);
+  // Try to parse as base64 first, then as raw bytes
+  let keyBuffer: Buffer;
+  try {
+    // Assume base64 format
+    keyBuffer = Buffer.from(key, 'base64');
+  } catch {
+    // Fallback to raw bytes
+    keyBuffer = Buffer.from(key);
+  }
+
   if (keyBuffer.length !== KEY_LENGTH) {
-    throw new Error(`ENCRYPTION_KEY must be exactly ${KEY_LENGTH} bytes long`);
+    throw new Error(`ENCRYPTION_KEY must be exactly ${KEY_LENGTH} bytes long (got ${keyBuffer.length} bytes). Generate a new key with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`);
   }
 
   return keyBuffer;

@@ -31,8 +31,35 @@ model User {
   followers     Follow[]           @relation("UserFollowers")
   following     Follow[]           @relation("UserFollowing")
   strategies    TradingStrategy[]
+  binanceApiKeys BinanceApiKey[]
+  copyTrades    CopyTradeRecord[]
 
   @@map("users")
+}
+
+// Binance API Key model (Binance 专用 API Key，带权限管理)
+model BinanceApiKey {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+
+  // Encrypted storage
+  apiKeyEncrypted    String @map("api_key_encrypted")
+  apiSecretEncrypted String @map("api_secret_encrypted")
+
+  label         String?  // 用户自定义标签，如 "主账户"
+  permissions   Json     @default("{\"spot\":true,\"futures\":false,\"margin\":false}") // { spot: true, futures: false, margin: false }
+  isActive      Boolean  @default(true) @map("is_active")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  lastUsedAt    DateTime? @map("last_used_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, label])
+  @@index([userId, isActive])
+  @@map("binance_api_keys")
 }
 
 // Exchange API Key model (encrypted storage)
@@ -52,7 +79,69 @@ model ExchangeAPIKey {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, exchange])
+  @@index([userId, status])
   @@map("exchange_api_keys")
+}
+
+// Trading Pair model (交易对配置 - 从 Binance 同步)
+model TradingPair {
+  id            String   @id @default(uuid())
+  symbol        String   @unique  // "BTCUSDT"
+  baseAsset     String   @map("base_asset")  // "BTC"
+  quoteAsset    String   @map("quote_asset") // "USDT"
+
+  status        String   @default("TRADING") // "TRADING", "HALT", "BREAK"
+
+  // Trading rules (从 Binance exchangeInfo 获取)
+  minPrice      String   @map("min_price")      // Decimal as String
+  maxPrice      String   @map("max_price")
+  tickSize      String   @map("tick_size")
+  minQty        String   @map("min_qty")
+  maxQty        String   @map("max_qty")
+  stepSize      String   @map("step_size")
+  minNotional   String   @map("min_notional")
+
+  isActive      Boolean  @default(true) @map("is_active")
+  lastSyncAt    DateTime @default(now()) @map("last_sync_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  signals       BinanceTradingSignal[]
+
+  @@index([symbol, isActive])
+  @@map("trading_pairs")
+}
+
+// Binance Trading Signal model (Binance 交易信号 - 基于技术指标)
+model BinanceTradingSignal {
+  id            String   @id @default(uuid())
+  strategyId    String?  @map("strategy_id")  // 关联策略，可选
+  tradingPairId String   @map("trading_pair_id")
+
+  symbol        String   // "BTCUSDT"
+  signalType    String   @map("signal_type")  // "BUY", "SELL", "HOLD"
+
+  // Signal data
+  price         String   // Decimal as String
+  confidence    Float    // 信号置信度 0-1
+  indicators    Json     // 技术指标快照 { rsi: 65.2, macd: {...}, bb: {...} }
+
+  // Execution status
+  status        String   @default("PENDING") // "PENDING", "EXECUTED", "EXPIRED", "CANCELLED"
+  executedAt    DateTime? @map("executed_at")
+  executedPrice String?  @map("executed_price")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  strategy      TradingStrategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  tradingPair   TradingPair @relation(fields: [tradingPairId], references: [id], onDelete: Cascade)
+
+  @@index([symbol, signalType, status])
+  @@index([strategyId, createdAt])
+  @@index([createdAt])
+  @@map("binance_trading_signals")
 }
 
 // Position Snapshot model (持仓快照)
@@ -162,7 +251,56 @@ model TradingStrategy {
 
   // Relations
   trader           User     @relation(fields: [traderId], references: [id], onDelete: Cascade)
+  binanceSignals   BinanceTradingSignal[]
 
   @@unique([traderId])
   @@map("trading_strategies")
+}
+
+// Copy Trade Record model (跟买交易记录 - 用于统计和盈亏计算)
+model CopyTradeRecord {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")       // 跟买用户
+  signalId         String?  @map("signal_id")     // 关联的信号（如果有）
+  traderId         String?  @map("trader_id")     // 被跟单的交易者ID
+
+  // Order details
+  symbol           String                          // 交易对 BTCUSDT
+  side             String                          // BUY / SELL
+  orderType        String   @map("order_type")    // MARKET / LIMIT
+
+  // Execution details
+  binanceOrderId   String   @map("binance_order_id") // Binance 订单 ID
+  status           String   @default("PENDING")   // PENDING, FILLED, PARTIALLY_FILLED, CANCELLED, FAILED
+
+  // Price and quantity
+  requestedAmount  String   @map("requested_amount")  // 用户请求金额 (USDT)
+  executedQty      String   @map("executed_qty")      // 实际成交数量
+  executedPrice    String   @map("executed_price")    // 实际成交价格
+  executedValue    String   @map("executed_value")    // 实际成交金额 (USDT)
+  commission       String   @default("0")             // 手续费
+  commissionAsset  String   @default("BNB") @map("commission_asset")
+
+  // P&L tracking (后续平仓时更新)
+  closePrice       String?  @map("close_price")       // 平仓价格
+  closedAt         DateTime? @map("closed_at")        // 平仓时间
+  realizedPnl      String?  @map("realized_pnl")      // 已实现盈亏 (USDT)
+  realizedPnlPct   Float?   @map("realized_pnl_pct")  // 已实现盈亏百分比
+
+  // Metadata
+  mode             String   @default("manual")    // auto / manual
+  errorMessage     String?  @map("error_message") // 错误信息（如果失败）
+
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  executedAt       DateTime? @map("executed_at")
+
+  // Relations
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
+  @@index([signalId])
+  @@index([binanceOrderId])
+  @@map("copy_trade_records")
 }

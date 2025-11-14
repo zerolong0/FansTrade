@@ -1,7 +1,24 @@
 import axios from 'axios';
-import type { AuthResponse, Follow, FollowStats, PaginatedFollowing, Trader } from './types';
+import type {
+  AuthResponse,
+  Follow,
+  FollowStats,
+  PaginatedFollowing,
+  Trader,
+  TradingSignal,
+  TradeRecord,
+  TradeStats,
+  PaginatedTradeHistory,
+  BinanceApiKey,
+  TradingPair,
+} from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// In production, use relative path (Nginx will proxy /api to backend)
+// In development, use localhost:3000
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? ''
+    : 'http://localhost:3000');
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -49,6 +66,51 @@ export const followAPI = {
 
   getStats: (userId: string) =>
     api.get<FollowStats>(`/follow/stats/${userId}`),
+};
+
+// Trading Signals API
+export const signalsAPI = {
+  getSignals: (params?: { symbol?: string; status?: string; limit?: number; offset?: number }) =>
+    api.get<{ signals: TradingSignal[]; total: number }>('/signals', { params }),
+
+  getSignalById: (signalId: string) =>
+    api.get<{ signal: TradingSignal }>(`/signals/${signalId}`),
+};
+
+// Copy Trade API
+export const copyTradeAPI = {
+  executeTrade: (data: { signalId: string; amount: number }) =>
+    api.post<{ success: boolean; orderId: string }>('/copy-trade/execute', data),
+
+  getHistory: (params?: { page?: number; limit?: number; status?: string; symbol?: string }) =>
+    api.get<PaginatedTradeHistory>('/copy-trade/history', { params }),
+
+  getStats: () =>
+    api.get<TradeStats>('/copy-trade/stats'),
+};
+
+// Binance API Key Management
+export const binanceAPI = {
+  addApiKey: (data: { apiKey: string; apiSecret: string; label?: string }) =>
+    api.post<{ message: string; apiKey: BinanceApiKey }>('/binance/api-keys', data),
+
+  getApiKeys: () =>
+    api.get<{ apiKeys: BinanceApiKey[] }>('/binance/api-keys'),
+
+  deleteApiKey: (keyId: string) =>
+    api.delete<{ message: string }>(`/binance/api-keys/${keyId}`),
+
+  updateApiKey: (keyId: string, data: { label?: string; isActive?: boolean }) =>
+    api.patch<{ message: string; apiKey: BinanceApiKey }>(`/binance/api-keys/${keyId}`, data),
+};
+
+// Trading Pairs API
+export const tradingPairsAPI = {
+  getAll: () =>
+    api.get<{ pairs: TradingPair[] }>('/trading-pairs'),
+
+  sync: () =>
+    api.post<{ message: string; count: number }>('/trading-pairs/sync'),
 };
 
 export default api;

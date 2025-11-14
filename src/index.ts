@@ -12,6 +12,12 @@ import authRoutes from './routes/auth.routes';
 import exchangeRoutes from './routes/exchange.routes';
 import followRoutes from './routes/follow.routes';
 import tradersRoutes from './routes/traders.routes';
+import binanceApiKeyRoutes from './routes/binance-api-key.routes';
+import marketRoutes from './routes/market.routes';
+
+// Import services
+import { signalScannerService } from './services/scheduler/signal-scanner.service';
+import { copyTradeService } from './services/trading/copy-trade.service';
 
 // Load environment variables (override system env vars)
 dotenv.config({ override: true });
@@ -74,6 +80,8 @@ app.get('/', (_req, res) => {
       auth: '/api/auth',
       exchange: '/api/exchange',
       follow: '/api/follow',
+      binanceApiKeys: '/api/binance/api-keys',
+      market: '/api/market',
       health: '/health',
     },
   });
@@ -83,6 +91,8 @@ app.get('/', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/exchange', exchangeRoutes);
 app.use('/api/follow', followRoutes);
+app.use('/api/binance/api-keys', binanceApiKeyRoutes);
+app.use('/api/market', marketRoutes);
 app.use('/api', tradersRoutes);
 
 // WebSocket connection handling
@@ -99,6 +109,29 @@ io.on('connection', (socket) => {
   socket.on('unsubscribe', (traderId: string) => {
     socket.leave(`trader:${traderId}`);
     console.log(`📡 Socket ${socket.id} unsubscribed from trader ${traderId}`);
+  });
+
+  // Subscribe to all trading signals
+  socket.on('subscribe:signals', () => {
+    socket.join('signals:all');
+    console.log(`📡 Socket ${socket.id} subscribed to all signals`);
+  });
+
+  // Subscribe to specific symbol signals
+  socket.on('subscribe:symbol', (symbol: string) => {
+    socket.join(`signal:${symbol}`);
+    console.log(`📡 Socket ${socket.id} subscribed to ${symbol} signals`);
+  });
+
+  // Unsubscribe from signal channels
+  socket.on('unsubscribe:signals', () => {
+    socket.leave('signals:all');
+    console.log(`📡 Socket ${socket.id} unsubscribed from all signals`);
+  });
+
+  socket.on('unsubscribe:symbol', (symbol: string) => {
+    socket.leave(`signal:${symbol}`);
+    console.log(`📡 Socket ${socket.id} unsubscribed from ${symbol} signals`);
   });
 
   socket.on('disconnect', () => {
@@ -136,12 +169,28 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`   - Auth: http://localhost:${PORT}/api/auth`);
     console.log(`   - Exchange: http://localhost:${PORT}/api/exchange`);
     console.log(`   - Follow: http://localhost:${PORT}/api/follow`);
+    console.log(`   - Binance API Keys: http://localhost:${PORT}/api/binance/api-keys`);
+    console.log(`   - Market Data: http://localhost:${PORT}/api/market`);
 
     // Test connections
     console.log(`\n🔍 Running system checks...`);
     await testDatabaseConnection();
     const encryptionOk = testEncryption();
     console.log(`${encryptionOk ? '✅' : '❌'} Encryption: ${encryptionOk ? 'working' : 'failed'}`);
+
+    // Initialize Signal Scanner
+    console.log(`\n📡 Initializing Signal Scanner...`);
+    signalScannerService.setSocketIO(io);
+    copyTradeService.setSocketIO(io);
+
+    // Optional: Auto-start scanner (controlled by environment variable)
+    if (process.env.AUTO_START_SCANNER === 'true') {
+      signalScannerService.startDefaultScanner();
+      console.log(`✅ Signal Scanner auto-started`);
+    } else {
+      console.log(`⚠️  Signal Scanner not auto-started (set AUTO_START_SCANNER=true to enable)`);
+    }
+
     console.log(`\n✨ Ready to accept requests\n`);
   });
 }

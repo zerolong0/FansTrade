@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, User, LogOut } from 'lucide-react';
+import { TrendingUp, User, LogOut, Settings } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/auth';
 
 export function Navbar() {
@@ -32,6 +32,15 @@ export function Navbar() {
               <div className="flex items-center space-x-3">
                 <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   @{user?.username}
+                </Link>
+                <Link href="/settings/api-keys">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="hover:text-primary"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
                 </Link>
                 <Button
                   variant="ghost"

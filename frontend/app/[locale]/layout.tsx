@@ -24,13 +24,16 @@ export const metadata: Metadata = {
 
 type Props = {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 };
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: Props) {
+  // Next.js 16: params is a Promise
+  const { locale } = await params;
+
   // 验证 locale 是否合法
   if (!locales.includes(locale as any)) {
     notFound();

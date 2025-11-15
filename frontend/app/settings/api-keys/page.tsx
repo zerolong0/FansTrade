@@ -248,7 +248,7 @@ export default function ApiKeysPage() {
                 {!showAddForm && (
                   <Button
                     onClick={() => setShowAddForm(true)}
-                    className="bg-gradient-primary"
+                    className="bg-gradient-primary border-2 border-primary/50 shadow-lg shadow-primary/20 hover:shadow-primary/40"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     添加新密钥
@@ -360,7 +360,7 @@ export default function ApiKeysPage() {
                     {!showAddForm && (
                       <Button
                         onClick={() => setShowAddForm(true)}
-                        className="bg-gradient-primary"
+                        className="bg-gradient-primary border-2 border-primary/50 shadow-lg shadow-primary/20 hover:shadow-primary/40"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         添加第一个密钥

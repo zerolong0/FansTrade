@@ -1,5 +1,5 @@
 import createMiddleware from 'next-intl/middleware';
-import { locales, defaultLocale } from './i18n.mjs';
+import { locales, defaultLocale } from './i18n';
 
 export default createMiddleware({
   // 所有支持的语言

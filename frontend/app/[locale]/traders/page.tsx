@@ -8,6 +8,9 @@ import { MiniLeaderboard } from '@/components/leaderboard/MiniLeaderboard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { tradersAPI } from '@/lib/api/traders';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function TradersPage() {
   const t = useTranslations('traders');
   const { data, isLoading, error } = useQuery({

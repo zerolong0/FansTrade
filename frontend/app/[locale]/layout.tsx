@@ -3,7 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { locales, type Locale } from '@/i18n';
+import { locales } from '@/i18n.mjs';
+
+type Locale = typeof locales[number];
 import { Providers } from "../providers";
 import "../globals.css";
 

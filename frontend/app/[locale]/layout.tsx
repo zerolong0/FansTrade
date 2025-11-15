@@ -27,10 +27,10 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
-// Generate static params for all supported locales
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
+// Removed generateStaticParams to allow full dynamic rendering
+// export function generateStaticParams() {
+//   return locales.map((locale) => ({ locale }));
+// }
 
 export default async function LocaleLayout({
   children,

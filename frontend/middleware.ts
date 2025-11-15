@@ -11,8 +11,8 @@ export default createMiddleware({
   // 语言检测策略
   localeDetection: true,
 
-  // URL 策略：默认语言不显示前缀
-  localePrefix: 'as-needed',
+  // URL 策略：始终显示语言前缀
+  localePrefix: 'always',
 });
 
 export const config = {

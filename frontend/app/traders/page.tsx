@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/layout/Navbar';
 import { TraderCard } from '@/components/traders/TraderCard';
+import { MiniLeaderboard } from '@/components/leaderboard/MiniLeaderboard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { tradersAPI } from '@/lib/api/traders';
 
@@ -27,27 +28,37 @@ export default function TradersPage() {
           </p>
         </div>
 
-        {isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-64 rounded-xl" />
-            ))}
-          </div>
-        )}
+        <div className="flex gap-8">
+          {/* Main Content - Traders Grid */}
+          <div className="flex-1">
+            {isLoading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-64 rounded-xl" />
+                ))}
+              </div>
+            )}
 
-        {error && (
-          <div className="text-center py-12">
-            <p className="text-red-400">Failed to load traders. Please try again.</p>
-          </div>
-        )}
+            {error && (
+              <div className="text-center py-12">
+                <p className="text-red-400">Failed to load traders. Please try again.</p>
+              </div>
+            )}
 
-        {data && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.traders.map((trader) => (
-              <TraderCard key={trader.id} trader={trader} />
-            ))}
+            {data && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                {data.traders.map((trader) => (
+                  <TraderCard key={trader.id} trader={trader} />
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Sidebar - Mini Leaderboard */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <MiniLeaderboard />
+          </div>
+        </div>
       </div>
     </main>
   );

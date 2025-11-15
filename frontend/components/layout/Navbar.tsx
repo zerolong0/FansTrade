@@ -1,14 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, User, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/auth';
-import { LanguageSwitcher } from './LanguageSwitcher';
 
 export function Navbar() {
-  const t = useTranslations('nav');
   const { isAuthenticated, user, logout } = useAuthStore();
 
   return (
@@ -21,16 +18,16 @@ export function Navbar() {
 
         <div className="flex items-center space-x-6">
           <Link href="/traders" className="text-sm hover:text-primary transition-colors">
-            {t('traders')}
+            交易者
           </Link>
           <Link href="/leaderboard" className="text-sm hover:text-primary transition-colors">
-            {t('leaderboard')}
+            排行榜
           </Link>
 
           {isAuthenticated ? (
             <>
               <Link href="/following" className="text-sm hover:text-primary transition-colors">
-                {t('following')}
+                关注中
               </Link>
               <div className="flex items-center space-x-3">
                 <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -50,12 +47,10 @@ export function Navbar() {
             <Link href="/login">
               <Button size="sm" className="btn-primary">
                 <User className="w-4 h-4 mr-2" />
-                {t('login')}
+                登录
               </Button>
             </Link>
           )}
-
-          <LanguageSwitcher />
         </div>
       </div>
     </nav>

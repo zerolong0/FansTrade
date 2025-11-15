@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
 import { Navbar } from '@/components/layout/Navbar';
 import { TraderCard } from '@/components/traders/TraderCard';
 import { MiniLeaderboard } from '@/components/leaderboard/MiniLeaderboard';
@@ -9,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { tradersAPI } from '@/lib/api/traders';
 
 export function TradersPageClient() {
-  const t = useTranslations('traders');
   const { data, isLoading, error } = useQuery({
     queryKey: ['traders'],
     queryFn: async () => {
@@ -24,9 +22,9 @@ export function TradersPageClient() {
 
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-glow">{t('title')}</h1>
+          <h1 className="text-4xl font-bold mb-2 text-glow">顶级交易者</h1>
           <p className="text-muted-foreground">
-            {t('subtitle')}
+            跟随最优秀的加密货币交易者，学习他们的策略
           </p>
         </div>
 
@@ -43,7 +41,7 @@ export function TradersPageClient() {
 
             {error && (
               <div className="text-center py-12">
-                <p className="text-red-400">{t('loadError')}</p>
+                <p className="text-red-400">加载失败，请重试</p>
               </div>
             )}
 

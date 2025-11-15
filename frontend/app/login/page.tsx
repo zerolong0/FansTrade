@@ -107,6 +107,7 @@ export default function LoginPage() {
                   {...register('email')}
                   id="email"
                   type="email"
+                  autoComplete="email"
                   className={`
                     block w-full pl-10 pr-3 py-3
                     glass rounded-lg
@@ -137,6 +138,7 @@ export default function LoginPage() {
                   {...register('password')}
                   id="password"
                   type="password"
+                  autoComplete="current-password"
                   className={`
                     block w-full pl-10 pr-3 py-3
                     glass rounded-lg

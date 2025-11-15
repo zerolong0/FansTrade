@@ -21,7 +21,11 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
 
+    console.log('[Auth] Request URL:', req.url);
+    console.log('[Auth] Authorization header:', authHeader ? `Bearer ${authHeader.slice(7, 27)}...` : 'MISSING');
+
     if (!authHeader) {
+      console.log('[Auth] FAILED: No authorization header');
       res.status(401).json({ error: 'No authorization header' });
       return;
     }
@@ -30,6 +34,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
     const parts = authHeader.split(' ');
 
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      console.log('[Auth] FAILED: Invalid format, parts:', parts.length, 'type:', parts[0]);
       res.status(401).json({ error: 'Invalid authorization format. Use: Bearer <token>' });
       return;
     }
@@ -39,12 +44,15 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
     // Verify token
     const payload = authService.verifyToken(token);
 
+    console.log('[Auth] SUCCESS: User authenticated:', payload.username);
+
     // Attach user to request
     req.user = payload;
 
     next();
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Authentication failed';
+    console.log('[Auth] FAILED: Verification error:', message);
     res.status(401).json({ error: message });
   }
 }

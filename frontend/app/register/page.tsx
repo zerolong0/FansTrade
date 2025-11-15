@@ -119,6 +119,7 @@ export default function RegisterPage() {
                   {...register('email')}
                   id="email"
                   type="email"
+                  autoComplete="email"
                   className={`
                     block w-full pl-10 pr-3 py-3
                     glass rounded-lg
@@ -149,6 +150,7 @@ export default function RegisterPage() {
                   {...register('username')}
                   id="username"
                   type="text"
+                  autoComplete="username"
                   className={`
                     block w-full pl-10 pr-3 py-3
                     glass rounded-lg
@@ -179,6 +181,7 @@ export default function RegisterPage() {
                   {...register('password')}
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   className={`
                     block w-full pl-10 pr-3 py-3
                     glass rounded-lg
@@ -212,6 +215,7 @@ export default function RegisterPage() {
                   {...register('confirmPassword')}
                   id="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   className={`
                     block w-full pl-10 pr-3 py-3
                     glass rounded-lg

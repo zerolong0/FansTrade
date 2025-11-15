@@ -35,8 +35,17 @@ export default function DashboardPage() {
     winRate: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Wait for Zustand persist to hydrate from localStorage
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
+    // Don't check auth until hydrated
+    if (!isHydrated) return;
+
     if (!isAuthenticated) {
       router.push('/login');
       return;
@@ -44,7 +53,7 @@ export default function DashboardPage() {
 
     // Load user's following list
     loadDashboardData();
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, isHydrated]);
 
   const loadDashboardData = async () => {
     try {
@@ -132,7 +141,11 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <Button variant="outline" className="self-start">
+            <Button
+              variant="outline"
+              className="self-start"
+              onClick={() => router.push('/settings')}
+            >
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </Button>

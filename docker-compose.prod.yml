@@ -51,7 +51,7 @@ services:
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       COINBASE_API_URL: https://api.exchange.coinbase.com
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      ALLOWED_ORIGINS: http://nas.zerolong.top:6677,http://192.168.0.42:6677,http://localhost:6677
+      ALLOWED_ORIGINS: http://nas.zerolong.top:6678,http://192.168.0.42:6678,http://localhost:6678
     depends_on:
       postgres:
         condition: service_healthy
@@ -93,7 +93,7 @@ services:
     image: nginx:alpine
     container_name: fanstrade-nginx
     ports:
-      - "6677:80"
+      - "6678:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:

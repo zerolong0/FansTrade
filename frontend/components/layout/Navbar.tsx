@@ -20,6 +20,9 @@ export function Navbar() {
           <Link href="/traders" className="text-sm hover:text-primary transition-colors">
             Traders
           </Link>
+          <Link href="/leaderboard" className="text-sm hover:text-primary transition-colors">
+            Leaderboard
+          </Link>
 
           {isAuthenticated ? (
             <>

@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
  */
 export async function createApiKey(req: Request, res: Response) {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -108,7 +108,7 @@ export async function createApiKey(req: Request, res: Response) {
  */
 export async function getApiKeys(req: Request, res: Response) {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -141,7 +141,7 @@ export async function getApiKeys(req: Request, res: Response) {
  */
 export async function deleteApiKey(req: Request, res: Response) {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -180,7 +180,7 @@ export async function deleteApiKey(req: Request, res: Response) {
  */
 export async function toggleApiKey(req: Request, res: Response) {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }

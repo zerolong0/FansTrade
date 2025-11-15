@@ -14,6 +14,7 @@ import followRoutes from './routes/follow.routes';
 import tradersRoutes from './routes/traders.routes';
 import binanceApiKeyRoutes from './routes/binance-api-key.routes';
 import marketRoutes from './routes/market.routes';
+import leaderboardRoutes from './routes/leaderboard.routes';
 
 // Import services
 import { signalScannerService } from './services/scheduler/signal-scanner.service';
@@ -30,6 +31,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:3000',
   'http://localhost:3001', // 添加前端开发端口
   'http://192.168.0.42:3001', // NAS 内网访问
+  'http://192.168.0.42:6678', // NAS Nginx proxy
 ];
 
 const io = new Server(httpServer, {
@@ -82,6 +84,7 @@ app.get('/', (_req, res) => {
       follow: '/api/follow',
       binanceApiKeys: '/api/binance/api-keys',
       market: '/api/market',
+      leaderboard: '/api/leaderboard',
       health: '/health',
     },
   });
@@ -93,6 +96,7 @@ app.use('/api/exchange', exchangeRoutes);
 app.use('/api/follow', followRoutes);
 app.use('/api/binance/api-keys', binanceApiKeyRoutes);
 app.use('/api/market', marketRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api', tradersRoutes);
 
 // WebSocket connection handling

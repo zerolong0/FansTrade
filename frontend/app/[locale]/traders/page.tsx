@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { Navbar } from '@/components/layout/Navbar';
 import { TraderCard } from '@/components/traders/TraderCard';
 import { MiniLeaderboard } from '@/components/leaderboard/MiniLeaderboard';
@@ -8,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { tradersAPI } from '@/lib/api/traders';
 
 export default function TradersPage() {
+  const t = useTranslations('traders');
   const { data, isLoading, error } = useQuery({
     queryKey: ['traders'],
     queryFn: async () => {
@@ -22,9 +24,9 @@ export default function TradersPage() {
 
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-glow">Top Traders</h1>
+          <h1 className="text-4xl font-bold mb-2 text-glow">{t('title')}</h1>
           <p className="text-muted-foreground">
-            Follow the best crypto traders and learn from their strategies
+            {t('subtitle')}
           </p>
         </div>
 
@@ -41,7 +43,7 @@ export default function TradersPage() {
 
             {error && (
               <div className="text-center py-12">
-                <p className="text-red-400">Failed to load traders. Please try again.</p>
+                <p className="text-red-400">{t('loadError')}</p>
               </div>
             )}
 

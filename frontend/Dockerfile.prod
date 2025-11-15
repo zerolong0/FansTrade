@@ -38,9 +38,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy built application
 COPY --from=builder /app/public ./public
-# Copy i18n configuration and messages for runtime with correct ownership
-COPY --from=builder --chown=nextjs:nodejs /app/i18n.mjs ./i18n.mjs
-COPY --from=builder --chown=nextjs:nodejs /app/app/messages ./app/messages
+# Messages are bundled into Next.js chunks, no need to copy separately
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
